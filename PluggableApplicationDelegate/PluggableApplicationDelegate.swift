@@ -13,7 +13,8 @@ import UIKit
 public protocol ApplicationService {
     func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool
-
+    func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool
+  
     func applicationWillEnterForeground(_ application: UIApplication)
     func applicationDidEnterBackground(_ application: UIApplication)
     func applicationDidBecomeActive(_ application: UIApplication)
@@ -41,6 +42,7 @@ public protocol ApplicationService {
 public extension ApplicationService {
     func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool { return true }
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool { return true }
+    func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool { return false }
 
     func applicationWillEnterForeground(_ application: UIApplication) {}
     func applicationDidEnterBackground(_ application: UIApplication) {}
@@ -101,6 +103,12 @@ public extension PluggableApplicationDelegate {
             $0 && $1.application(application, didFinishLaunchingWithOptions: launchOptions)
         }
     }
+  
+  func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
+    return lazyServices.reduce(true) {
+      $0 && $1.application(application, continue:userActivity, restorationHandler: restorationHandler)
+  }
+}
 }
 
 public extension PluggableApplicationDelegate {
